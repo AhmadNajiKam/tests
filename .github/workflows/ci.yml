@@ -1,16 +1,11 @@
 name: build-test
 run-name: ${{github.actor}} is building and testing
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+  workflow_call:
+permissions:
+      contents: read
 jobs:
   lint:
-    permissions:
-      contents: read
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -29,8 +24,6 @@ jobs:
       - name: Run Ruff
         run: ruff check .
   test:
-    permissions:
-      contents: read
     runs-on: ubuntu-latest
     strategy:
       matrix:
