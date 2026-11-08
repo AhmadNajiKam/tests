@@ -20,8 +20,11 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set Image name
+        run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
       - name: Build and push Docker images
         uses: docker/build-push-action@v7.4.0
         with:
+          context: .
           push: true
-          tags: ghcr.io/AhmadNajiKam/test-:${{github.sha}}
+          tags: ${{env.IMAGE}}:${{github.sha}}
