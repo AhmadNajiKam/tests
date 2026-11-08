@@ -24,4 +24,4 @@ jobs:
         uses: docker/build-push-action@v7.4.0
         with:
           push: true
-          tags: ghcr.io/AhmadNajiKam/ci-demo:${{github.sha}}
+          tags: ghcr.io/AhmadNajiKam/test-:${{github.sha}}
