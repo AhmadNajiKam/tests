@@ -11,6 +11,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+    outputs:
+      image-name: ${{steps.set-image.outputs.IMAGE}}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -21,10 +23,35 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Set Image name
-        run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
+        id: set-image
+        run: |
+          echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
       - name: Build and push Docker images
         uses: docker/build-push-action@v7.4.0
         with:
           context: .
           push: true
-          tags: ${{env.IMAGE}}:${{github.sha}}
+          tags: ${{steps.set-image.outputs.IMAGE}}:${{github.sha}}
+  deploy:
+    permissions:
+      packages: read
+      contents: read
+    environment:
+      name: production
+    needs: build
+    runs-on: self-hosted
+    steps:
+      - name: Login to registry
+        uses: docker/login-action@v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Running the container
+        run: |
+          echo "Checkout this secret ${{secrets.GREAT_STUFF}}"
+          echo "Checkout this env var ${{vars.SO_GREAT_STUFF}}"
+          docker rm -f ci-demo || true
+          docker run -d --name ci-demo -p 8000:8000 ${{needs.build.outputs.image-name}}:${{github.sha}} 
+      - name: Simple Smoke test
+        run: curl --fail --retry 5 --retry-delay 2 --retry-connrefused http://localhost:8000/health
