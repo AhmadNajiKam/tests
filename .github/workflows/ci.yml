@@ -6,6 +6,9 @@ on:
     branches: [main]
 permissions:
       contents: read
+concurrency:
+      group: ci-${{github.ref}}
+      cancel-in-progress: ${{githug.event_name == 'pull_request'}}
 jobs:
   lint:
     runs-on: ubuntu-latest
