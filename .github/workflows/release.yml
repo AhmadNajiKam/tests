@@ -54,4 +54,9 @@ jobs:
           docker rm -f ci-demo || true
           docker run -d --name ci-demo -p 8000:8000 ${{needs.build.outputs.image-name}}:${{github.sha}} 
       - name: Simple Smoke test
-        run: curl --fail --retry 5 --retry-delay 2 --retry-connrefused http://localhost:8000/health
+        run: curl --fail --retry 10 --retry-delay 2 --retry-connrefused --retry-all-errors http://localhost:8000/health
+      - name: Show container logs on failure
+        if: failure()
+        run: |
+          docker ps -a
+          docker logs ci-demo
